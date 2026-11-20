@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>면접 연습장</title>
+<style>
+:root{--bg:#f7f6f3;--card:#fff;--fg:#1d1d1f;--mut:#66676c;--line:#e3e1dc;--acc:#2f6f5e;--acc2:#e4f0ec;--warn:#ffeaa0;--bad:#b4410c;--ok:#15803d}
+@media (prefers-color-scheme:dark){:root{--bg:#141516;--card:#1e2022;--fg:#ececec;--mut:#9a9ca0;--line:#303336;--acc:#6cc5a8;--acc2:#1d302a;--warn:#5c4b0e;--bad:#fb923c;--ok:#4ade80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;-webkit-text-size-adjust:100%;word-break:keep-all;overflow-wrap:anywhere}
+main{max-width:640px;margin:0 auto;padding:16px 16px 96px}
+h1{font-size:22px;margin:8px 0 2px}h2{font-size:17px;margin:22px 0 8px}
+p{margin:6px 0}ul{margin:6px 0;padding-left:20px}
+.sub,.mut{color:var(--mut);font-size:14px}.sub{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;min-height:44px}
+button.p{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
+button.big{display:block;width:100%;text-align:left;padding:16px;margin:8px 0;font-size:17px;font-weight:600}
+button.big small{display:block;opacity:.8;font-size:13px;font-weight:400}
+button.c{text-align:center}
+button.chip{padding:6px 10px;min-height:38px;font-size:14px}
+button.chip.on{border-color:var(--acc);background:var(--acc2)}
+button.back{border:none;background:none;padding:8px 0;color:var(--acc)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+textarea{width:100%;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin:4px 0;min-height:80px;resize:vertical}
+input[type=date]{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px}
+.badge{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap;color:var(--mut)}
+.badge.full{background:var(--acc);border-color:var(--acc);color:var(--bg)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:12px 0}
+.steps button{padding:4px 2px;font-size:12px;min-height:46px;line-height:1.3}
+.steps .on{background:var(--acc2);border-color:var(--acc);font-weight:700}
+.steps .dn::after{content:" ✓";color:var(--acc)}
+.q{font-size:20px;font-weight:700;line-height:1.45}
+.huge{font-size:24px;font-weight:700;line-height:1.5}
+.blk{padding:10px 12px;border-radius:10px;margin:6px 0;border:1px solid transparent}
+.blk.now{background:var(--acc2);border-color:var(--acc)}
+.blk b{color:var(--acc);font-size:13px;display:block}
+.me{font-size:12px;color:var(--bad);font-weight:600}
+.warnbox{background:var(--warn);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
+.stage{min-height:200px;display:flex;flex-direction:column;justify-content:center}
+.st{font-size:15px;color:var(--acc);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.vu{display:inline-block;width:60px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.vu i{display:block;height:100%;width:0;background:var(--acc);transition:width .08s}
+.list a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 2px;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+label.ck{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+label.ck input{width:22px;height:22px;margin-top:2px;flex:none;accent-color:var(--acc)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+.breath{width:170px;height:170px;border-radius:50%;background:var(--acc2);border:2px solid var(--acc);margin:24px auto;display:grid;place-items:center;transform:scale(.6);font-weight:700}
+.timer{font-size:40px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+details summary{cursor:pointer;padding:8px 0;color:var(--acc)}
+.script p{margin:10px 0}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+<script>
+// ================= 대본 =================
+// s: [키워드, 말할 문장, 1=본인 기억으로 바꿀 곳]  tl: [꼬리질문, 예시 답, 1=본인 기억]
+// 사실 근거: 자기소개서(2026-11-19 카톡 캡처) 5문항. 자소서에 없는 내용은 1로 표시.
+const SAFE='간호·안전 내용은 일반 연습용입니다. 실제로는 병원 지침과 간호조무사 업무 범위를 따릅니다.';
+const Q=[
+{id:'intro',cat:'기본',q:'1분 동안 자기소개 해 주세요.',it:'첫인상, 그리고 강점 하나가 이 일과 이어지는지 봅니다.',wk:'경력을 다 늘어놓으면 길어집니다. 강점 하나로 묶으세요.',cr:['첫 문장에 나를 한 줄로','강점과 근거 경험','간호조무사로서 할 일로 마무리'],
+s:[['5년, 손님 눈높이','안녕하세요. 저는 화장품 매장에서 5년 동안 손님들을 만나 오다가, 이제는 환자분들 곁에서 일하고 싶어서 이 자리에 왔습니다.'],
+['어르신, 천천히','매장에 어르신 손님이 많이 오셨는데요, 그분들께는 쉬운 말로 천천히, 필요하면 몇 번이고 다시 설명해 드렸어요. 그러면서 상대 입장에서 먼저 생각하는 게 몸에 뱄습니다.'],
+['실습, 작은 위생','간호조무사 과정에서는 산부인과, 성형외과, 피부관리실에서 실습했고요. 환자 안내부터 수술 전 처치 보조, 기구 소독까지 직접 해 보면서, 작은 위생 하나가 환자 안전이랑 바로 이어진다는 걸 배웠습니다.'],
+['한 번 더 살피는 사람','충남대학교병원에서도 환자분 입장에서 한 번 더 살피고, 맡은 일은 정확하게 해내는 간호조무사가 되겠습니다. 감사합니다.']],
+tl:[['방금 말한 강점을 보여 주는 일, 하나만 더 말해 볼래요?','매장에서 VIP 손님 샘플이 빠진 걸 제가 기록 보다가 먼저 찾은 적이 있어요. 손님이 알아채시기 전에 먼저 연락드려서 사과드리고, 바로 챙겨 드렸습니다.'],
+['본인 단점은 뭐라고 생각해요?','의견이 달라도 관계가 불편해질까 봐 바로 말을 못 하는 편이에요. 그래서 요즘은 주장하기보다 "이렇게 하면 어떨까요?" 하고 질문으로 먼저 꺼내 보려고 합니다.'],
+['매장 경력이 병원에서 어떻게 쓰일까요?','손님 표정이나 말투만 보고 불편한 걸 먼저 알아채는 게 익숙해졌거든요. 환자분이 말씀 안 하셔도 불편한 걸 먼저 살피는 데 쓰일 거라고 생각합니다.']]},
+
+{id:'motive',cat:'기본',q:'간호조무사가 되려는 이유가 뭔가요?',it:'이 일을 왜, 얼마나 오래 할 사람인지 봅니다.',wk:'"남을 돕고 싶어서"만으로는 약합니다. 계기가 된 장면이 있어야 합니다.',cr:['계기가 된 장면','내 경험과 연결','오래 할 이유'],
+s:[['오래 쉬었던 시간','저는 한동안 진로를 못 정해서 꽤 오래 일을 쉬었습니다. 그때 내가 언제 일하면서 좋았나 돌아봤는데, 결국 사람을 상대하면서 누군가한테 도움이 됐을 때더라고요.'],
+['그래서 도전','그래서 사람을 직접 돕는 일을 해 보자 싶어서 간호조무사 과정에 도전했습니다.'],
+['산부인과 실습','마음을 굳힌 건 산부인과 실습이었어요. 출산을 돕는 의료진분들이 산모 한 분 한 분을 정성껏 돌보시는 걸 옆에서 보면서, 아, 나도 이 일을 제대로 해 보고 싶다, 그런 마음이 확실해졌습니다.'],
+['돌아온 길','돌아서 온 길이라서, 오히려 쉽게 그만두지 않을 거라고 생각합니다.']],
+tl:[['그 실습에서 제일 인상 깊었던 건 뭐였어요?','바쁜 와중에도 산모분께 지금 뭘 하는지 하나하나 말씀해 주시던 모습이요. 그 말 한마디에 산모분이 훨씬 편해 보이셨어요.',1],
+['힘든 일인데 괜찮겠어요?','네, 실습하면서 힘든 것도 직접 봤고, 그래도 하고 싶다는 마음이 들어서 지원했습니다. 매장에서도 5년 동안 하루 종일 서서 일했고요.'],
+['5년 뒤에는 어떤 모습일 것 같아요?','환자분도, 선생님들도 "저 사람한테 맡기면 된다" 하고 믿어 주는 사람이 돼 있고 싶습니다.']]},
+
+{id:'whycnuh',cat:'기본',q:'왜 충남대학교병원에 지원했어요?',it:'병원을 알아보고 왔는지, 오래 다닐 사람인지 봅니다.',wk:'자소서에 병원을 고른 이유가 없습니다. 아는 사실만 말하세요.',cr:['이 병원만의 이유','내 경험과 연결','입사 후 기여'],
+s:[['지역 거점 병원','충남대학교병원은 대전, 충남에서 큰 병이 생기면 결국 찾게 되는 병원이라고 생각합니다. 그만큼 중한 환자분들도 많고, 그런 곳에서 제대로 배우면서 일하고 싶었습니다.'],
+['공감, 마음을 잇는','그리고 병원 핵심가치에 "공감, 마음을 잇는 CNUH"가 있는 걸 보고, 아, 내가 매장에서 5년 동안 해 온 게 이거였구나 싶었어요.'],
+['눈높이로 기여','손님 눈높이에 맞추던 걸, 여기서는 환자분들께 하고 싶습니다.']],
+tl:[['다른 병원에도 지원했어요?','네, 몇 군데 더 냈습니다. 그래도 제일 오래 다니고 싶은 곳은 충남대학교병원입니다.',1],
+['우리 병원에 대해 아는 거 있어요?','대전, 충남 지역 거점 국립대학교병원이라고 알고 있고요, 지원하면서 핵심가치가 혁신, 협력, 공감, 신뢰, 지속 다섯 가지인 걸 봤습니다.'],
+['붙으면 어느 부서에서 일하고 싶어요?','보내 주시는 곳에서 배우겠습니다. 굳이 말씀드리면, 실습 때 해 본 처치 보조 쪽이면 빨리 적응할 수 있을 것 같습니다.',1]]},
+
+{id:'vision',cat:'기본',q:'입사하면 어떻게 일하고 싶어요?',it:'구체적인 계획이 있는지, 공감을 행동으로 옮길 수 있는지 봅니다.',wk:'자소서 2-1, 2-2가 똑같이 "공감→신뢰→협력→혁신"으로 끝납니다. 첫 1년 계획으로 바꿔 말하세요.',cr:['첫 1년에 할 일','공감을 행동으로','장기 목표'],
+s:[['첫 1년, 익히기','처음 1년은 배우는 데 집중하겠습니다. 병원 규정이랑 부서 업무 순서, 선생님들 일하시는 방식부터 최대한 빨리 익히겠습니다.'],
+['공감은 한 번 더 설명','제가 생각하는 공감은 거창한 게 아니라요, 환자분이 불안해하실 때 지금 뭘 하는지, 얼마나 기다리셔야 하는지 한 번 더 말씀드리는 거예요.'],
+['믿고 맡기는 사람','그렇게 몇 년 지나면, 환자분도 선생님들도 믿고 맡기는 사람이 돼 있고 싶습니다.']],
+tl:[['처음 3개월에 제일 먼저 익힐 건 뭐예요?','환자 확인하는 절차랑 감염관리 규정이요. 그게 틀리면 다른 걸 아무리 잘해도 소용이 없으니까요.'],
+['공감을 일하면서 어떻게 보여 줄 건데요?','검사 기다리시는 분께 순서를 미리 알려 드리고, 어르신께는 천천히 두 번 설명드리는 거요. 매장에서 하던 그대로입니다.'],
+['부족한 점은 어떻게 채울 거예요?','대학병원 경험이 없는 게 제일 부족하죠. 모르는 건 바로 여쭤보고, 배운 건 그날 메모해서 같은 걸 두 번 묻지 않겠습니다.']]},
+
+{id:'strength',cat:'기본',q:'본인 장점이랑 단점을 말해 주세요.',it:'자기를 객관적으로 보는지, 단점을 고치려 하는지 봅니다.',wk:'단점을 장점처럼 포장하면 오히려 감점입니다.',cr:['장점과 근거','진짜 단점','고치는 방법'],
+s:[['장점, 기록','제 장점은 꼼꼼하게 기록하는 거예요. 매장에서 샘플 나간 내역이랑 손님 피부 타입까지 엑셀이랑 장부에 다 적어 뒀는데, 그 덕에 다른 직원들이 못 본 샘플 누락을 제가 먼저 찾은 적이 있습니다.'],
+['단점, 말을 아낌','단점은, 의견이 달라도 사이가 불편해질까 봐 바로 말을 못 하는 편이라는 거예요.'],
+['질문으로 꺼내기','그래서 요즘은 제 생각을 주장하기보다 "이렇게 하면 어떨까요?" 하고 질문으로 먼저 꺼내 보려고 합니다. 실제로 그렇게 해서 선배랑 의견을 잘 맞춘 적도 있고요.']],
+tl:[['그 단점 때문에 문제가 된 적 있어요?','처음엔 혼자 고민만 하다가 일이 늦어질 뻔한 적이 있어요. 그 뒤로는 고민이 생기면 그날 안에 먼저 여쭤봅니다.',1],
+['같이 일한 사람들은 당신을 어떻게 말해요?','꼼꼼하다는 말을 제일 많이 들었어요. 재고 맞출 때 저한테 한 번 봐 달라고 많이들 하셨습니다.',1],
+['그 장점이 병원에서는 어디에 쓰일까요?','물품이나 환자 정보는 한 번 틀리면 큰일이잖아요. 적어 두고 다시 확인하는 습관이 거기서 제일 쓰일 것 같습니다.']]},
+
+{id:'store2hosp',cat:'경험',q:'매장에서 일한 경험이 병원 일에 도움이 될까요?',it:'다른 분야 경력을 병원 일로 옮겨 생각할 수 있는지 봅니다.',wk:'자소서 1번은 "매장", 2-1번은 "영업직"입니다. 말할 때는 "매장 판매·상담"으로 통일하세요.',cr:['구체적인 업무','병원에서 쓰일 점','차이도 인정'],
+s:[['눈높이 설명','네, 된다고 생각합니다. 매장에서 5년 동안 제일 많이 한 게 손님 눈높이에 맞춰 설명하는 일이었어요. 특히 어르신들께는 쉬운 말로, 천천히, 필요하면 몇 번이고요.'],
+['병원에서는 안내','병원에서도 환자분이나 보호자분께 검사 순서나 주의할 점을 안내할 때 그대로 쓸 수 있을 것 같습니다.'],
+['차이 인정','물론 손님이랑 환자분은 다르죠. 환자분은 아파서 오신 분들이라 훨씬 예민하실 수 있고, 무엇보다 제가 판단하면 안 되는 부분이 있으니까요. 그런 건 꼭 선생님께 여쭤보고 안내하겠습니다.']],
+tl:[['손님이랑 환자는 뭐가 제일 다른데요?','손님은 고르러 오시고, 환자분은 아파서 오시잖아요. 그래서 친절보다 안전이 먼저고, 제 마음대로 말씀드리면 안 된다는 게 제일 큰 차이라고 생각합니다.'],
+['제일 힘들었던 손님은 어땠어요?','같은 걸 여러 번 물어보시던 어르신이 계셨는데요, 종이에 크게 적어서 드렸더니 그다음부터는 편하게 저를 찾으셨어요.',1],
+['하루에 몇 명쯤 응대했어요?','정확히 세어 보진 않았는데, 주말에는 쉴 틈 없이 계속 손님을 맞았습니다.',1]]},
+
+{id:'practice',cat:'경험',q:'실습하면서 제일 기억에 남는 건 뭐예요?',it:'실습을 수동적으로 했는지, 보고 배운 게 있는지 봅니다.',wk:'자소서에 실습 업무만 나열돼 있고 장면이 없습니다.',cr:['구체적인 장면','내가 한 일','배운 점'],
+s:[['산부인과 실습','산부인과 실습이 제일 기억에 남습니다. 수술 전에 처치 보조를 하고, 끝나고 나서는 회복하시는 환자분 경과를 옆에서 같이 지켜봤어요.'],
+['긴장 풀리는 표정','수술 전에는 다들 많이 긴장하시는데, 선생님들이 지금 뭘 하는지 하나하나 말씀해 주시면 표정이 확 풀리시더라고요.',1],
+['처치만큼 설명','그걸 보면서 환자분께는 처치만큼 설명이 중요하다는 걸 배웠습니다. 저도 실습 때부터 그렇게 따라 해 보려고 했고요.']],
+tl:[['실습하다가 실수한 적은 없어요?','처음에 기구 정리 순서를 헷갈려서 선생님께 다시 여쭤본 적이 있어요. 그 뒤로는 순서를 메모해 두고 시작하기 전에 한 번 보고 했습니다.',1],
+['기구 소독은 어떤 순서로 했어요?','쓴 기구는 먼저 세척해서 이물질을 없애고, 말린 다음 포장해서 멸균했습니다. 보관할 때는 멸균 날짜랑 포장 상태를 확인했고요.'],
+['실습 중에 제일 힘들었던 건요?','오래 서 있는 거요. 처음 며칠은 힘들었는데, 매장에서 서서 일하던 게 있어서 금방 적응했습니다.',1]],ref:SAFE},
+
+{id:'empathy',cat:'경험',q:'공감을 실천한 경험을 구체적으로 말해 볼래요?',it:'자소서에 쓴 핵심가치가 실제 행동인지 봅니다.',wk:'2-1번에 다짐만 있고 사례가 없습니다. 반드시 장면 하나로 답하세요.',cr:['상대가 느낀 것','알아챈 방법','내 행동과 결과'],
+s:[['어르신 손님','매장에서 어르신 손님들 응대하던 게 생각나요. 설명을 한 번에 쭉 하면, 끝까지 들으시고도 잘 모르겠다는 표정을 지으시더라고요.'],
+['천천히, 쉬운 말','그래서 말을 천천히 하고, 어려운 성분 이름 대신 쉬운 말로 바꾸고, 중요한 건 한 번 더 확인해 드렸어요.'],
+['먼저 알아채기','그러니까 다음에 오셔서 저를 찾으시더라고요. 저는 공감이 상대가 지금 뭘 어려워하는지 먼저 알아채는 거라고 생각합니다.',1]],
+tl:[['공감이랑 친절은 뭐가 달라요?','친절은 제가 잘해 드리는 거고, 공감은 그분이 지금 뭐가 힘드신지 먼저 알아채는 거라고 생각해요. 알아채야 제대로 도와드릴 수 있으니까요.'],
+['공감하다가 일이 늦어지면요?','일을 놓치면 안 되죠. 짧게라도 말씀드리고, 길어질 것 같으면 "금방 다시 올게요" 하고 일부터 마치겠습니다.'],
+['공감하기 어려웠던 사람은 없었어요?','무리한 걸 요구하시는 손님이요. 그럴 땐 일단 끝까지 듣고, 해 드릴 수 있는 것과 없는 걸 나눠서 말씀드렸습니다.',1]]},
+
+{id:'conflict',cat:'경험',q:'같이 일하는 사람과 의견이 달랐던 적 있어요?',it:'갈등을 피하지도, 밀어붙이지도 않고 풀어 가는지 봅니다.',wk:'자소서에 무슨 업무였는지, 결국 어떻게 했는지가 빠져 있습니다.',cr:['무슨 업무였는지','어떻게 대화했는지','결과와 배운 점'],
+s:[['선배와 방식 차이','네, 있습니다. 매장에서 매니저님이 맡기신 일을 하다가 선배랑 방식이 달랐어요. 선배 방식대로 하면 나중에 일이 한 번 더 생길 것 같았거든요.'],
+['질문으로 꺼냄','근데 바로 "그거 아닌 것 같아요" 하면 사이가 불편해질 것 같아서, "이렇게 하면 이건 어떻게 될까요?" 하고 질문으로 꺼냈습니다. 선배 생각도 듣고, 제 이유도 말씀드리고요.'],
+['같이 따져 보기','그렇게 같이 장단점을 따져 보니까 더 나은 방법이 나왔고, 일도 깔끔하게 끝났어요. 의견이 다를 땐 누가 맞나보다 같이 따져 보는 게 중요하다는 걸 배웠습니다.']],
+tl:[['선배가 끝까지 자기 방식을 고집했으면요?','그럼 일단 선배 방식대로 하겠습니다. 다만 문제가 생길 만한 부분은 미리 말씀드리고, 그래도 걱정되면 위에 여쭤보겠습니다. 병원이라면 담당 선생님께요.'],
+['간호사 지시가 틀린 것 같으면 어떻게 해요?','제 판단으로 바꾸지 않고, "제가 확인하고 싶은데 이게 맞을까요?" 하고 바로 여쭤보겠습니다. 환자 안전이 걸린 거면 더더욱요.'],
+['그 선배랑은 그 뒤에 어땠어요?','오히려 편해졌어요. 그 뒤로는 선배가 먼저 "이거 어떻게 생각해?" 하고 물어보시기도 했습니다.',1]]},
+
+{id:'gap',cat:'경험',q:'일을 쉬었던 기간이 있던데, 그때 뭐 하셨어요?',it:'공백의 이유, 그 기간에 달라진 점, 다시 그만두지 않을지 봅니다.',wk:'자소서에 공백 기간과 그동안 한 일이 없습니다. 기간은 본인 것으로 덧붙이세요.',cr:['숨기지 않음','그 기간에 한 일','왜 지금 이 일인지'],
+s:[['숨기지 않기','네, 한동안 진로를 못 정해서 꽤 오래 쉬었습니다. 고민은 많이 했는데 막상 방향을 못 잡아서, 많이 막막했어요.',1],
+['돌아보기','그때 제가 했던 일들을 돌아보니까, 사람 상대하면서 도움 드릴 때가 제일 보람 있었더라고요. 그래서 간호조무사 과정을 시작했습니다.'],
+['이제는 행동','예전에는 고민만 하고 멈춰 있었다면, 지금은 목표를 정하고 교육이랑 실습까지 하나씩 직접 해 나가고 있어요. 그게 제일 달라진 점입니다.']],
+tl:[['그 기간에 제일 힘들었던 건 뭐예요?','아무것도 안 하고 있다는 불안이요. 그래서 더 확실하게 방향을 정하고 싶었습니다.',1],
+['왜 하필 간호조무사였어요?','사람을 직접 돕는 일이고, 매장에서 쌓은 응대 경험을 그대로 살릴 수 있는 일이라고 봤습니다.'],
+['또 그만두지 않는다는 근거가 있어요?','오래 고민해서 고른 길이고, 실습까지 해 보고 확신이 생겨서 지원한 거라서요. 쉽게 그만두지 않겠습니다.']]},
+
+{id:'sample',cat:'경험',q:'남들이 놓친 문제를 찾아서 해결한 적 있어요?',it:'꼼꼼함, 그리고 먼저 알리고 사과하는 태도가 병원 일로 이어지는지 봅니다.',wk:'누락 규모, 손님 반응이 없습니다. 병원에서 어떻게 할지 한 문장을 꼭 붙이세요.',cr:['기록으로 발견','먼저 알리고 사과','병원에서는'],
+s:[['기록으로 발견','네, 매장에서 VIP 손님께 드릴 샘플 일부가 빠진 걸 제가 찾은 적이 있습니다. 평소에 샘플 나간 내역을 엑셀이랑 장부에 적어 뒀는데, 그걸 보다가 알게 됐어요.'],
+['먼저 연락, 사과','처음엔 다른 직원들도 긴가민가했는데, 기록을 보여 드리면서 설명했고요. 손님이 알아채시기 전에 먼저 연락드려서 사과드리고, 더 챙겨 드렸습니다.'],
+['병원에서는 바로 보고','덕분에 불만이 생기기 전에 마무리됐어요. 병원에서도 물품이나 기록에서 작은 이상이 보이면 넘기지 않고, 바로 확인하고 보고하겠습니다.']],
+tl:[['병원에서 물품이나 기록이 빠진 걸 보면요?','제가 혼자 채우거나 고치지 않고, 담당 선생님께 바로 보고하겠습니다. 어디서 빠졌는지 기록도 같이 확인하고요.'],
+['그게 본인 실수였다면요?','그래도 똑같이 바로 말씀드렸을 거예요. 숨기면 더 커지니까요. 어디서 놓쳤는지 확인해서 다음엔 안 그러게 하겠습니다.'],
+['기록을 꼼꼼히 하는 본인만의 방법이 있어요?','그때그때 바로 적고, 퇴근 전에 한 번 더 맞춰 봅니다.',1]]},
+
+{id:'mistake',cat:'경험',q:'일하다 실수한 적 있어요? 그때 어떻게 했어요?',it:'실수를 숨기지 않고 바로 알리는 사람인지 봅니다. 병원에서 제일 중요하게 보는 태도입니다.',wk:'자소서에 본인 실수 사례가 없습니다. 아래 대본은 예시라 본인 경험으로 꼭 바꾸세요.',cr:['실수 인정','바로 한 조치','재발 방지'],
+s:[['실수','매장에서 손님 주문 내용을 제가 잘못 입력한 적이 있습니다.',1],
+['바로 알림','발견하자마자 매니저님께 먼저 말씀드리고, 손님께도 연락드려서 사과드린 다음 바로 바로잡았어요.',1],
+['다시 확인하는 습관','그 뒤로는 입력하고 나서 한 번 더 확인하는 습관을 들였습니다. 병원에서도 실수하면 숨기지 않고 바로 보고하는 게 제일 중요하다고 생각합니다.']],
+tl:[['그 실수 때문에 피해 본 사람은 없었어요?','바로 바로잡아서 손님께 큰 불편은 없었습니다.',1],
+['병원에서 실수하면 제일 먼저 뭘 해요?','바로 담당 선생님께 보고하겠습니다. 환자분 상태부터 확인하고요. 혼자 해결하려다 더 위험해질 수 있으니까요.'],
+['숨기고 싶었던 적은 없어요?','왜 없었겠어요. 근데 숨기면 결국 더 커진다는 걸 알아서, 그럴수록 빨리 말하려고 합니다.']]},
+
+{id:'clinic',cat:'병원 이해',q:'의원이랑 대학병원은 뭐가 다르다고 생각해요?',it:'의원급 실습만 한 지원자가 대학병원 환경을 이해하는지 봅니다.',wk:'실습처가 모두 의원급입니다.',cr:['규모·중증도·분업','절차와 보고','내 준비'],
+s:[['규모, 분업','의원은 몇 분이서 여러 일을 같이 하신다면, 대학병원은 규모도 크고 중한 환자분도 많고, 부서마다 일이 나뉘어 있다고 알고 있습니다.'],
+['절차, 보고','그래서 제 판단보다 정해진 절차랑 보고가 훨씬 중요하다고 생각해요. 한 사람이 순서를 건너뛰면 여러 부서가 같이 꼬이니까요.'],
+['규정부터','저는 실습을 의원급에서만 해서 대학병원은 처음입니다. 그런 만큼 규정부터 빨리 익히고, 모르는 건 꼭 확인하고 움직이겠습니다.']],
+tl:[['대학병원에서 제일 힘들 것 같은 건 뭐예요?','처음엔 일의 양이랑 속도에 적응하는 게 제일 힘들 것 같아요. 그래도 매장 바쁜 시즌을 5년 겪어 봐서, 부딪히면서 익히겠습니다.'],
+['교대 근무 해 본 적 있어요?','아직 안 해 봤습니다. 그래서 생활 리듬을 미리 맞춰 보고, 처음 몇 달은 컨디션 관리에 특히 신경 쓰겠습니다.',1],
+['처음 배치되면 뭐부터 익힐 거예요?','환자 확인 절차랑 감염관리 규정, 그리고 부서 물품 위치부터 익히겠습니다.']]},
+
+{id:'role',cat:'병원 이해',q:'간호조무사가 하는 일이 뭐라고 알고 있어요?',it:'지시 체계와 업무 범위를 아는지 봅니다.',wk:'자소서에 업무 범위 이야기가 없습니다.',cr:['간호사 지도 아래 보조','주요 업무','범위 밖은 보고'],
+s:[['간호사 지도 아래','간호사 선생님의 지도 아래에서 간호 업무를 돕는 사람이라고 알고 있습니다.'],
+['이동, 측정, 환경, 소독','환자분 이동이나 안내, 활력징후 측정, 병실 환경이랑 물품 관리, 기구 소독 같은 일을 하고요.'],
+['넘는 건 보고','제 범위를 넘는 판단이 필요한 건 혼자 하지 않고 바로 선생님께 보고하는 게, 제일 중요하다고 생각합니다.']],
+tl:[['간호조무사가 하면 안 되는 일은요?','진단이나 처방 같은 의료적인 판단, 그리고 제 업무 범위를 넘는 처치요. 애매하면 먼저 여쭤봅니다.'],
+['환자가 약에 대해 물어보면 뭐라고 해요?','제가 답하지 않고 "담당 선생님께 확인해서 알려 드릴게요" 하고 바로 연결해 드리겠습니다.'],
+['바쁠 때 일의 순서는 어떻게 정해요?','환자 안전이 걸린 일이 제일 먼저고, 그다음은 선생님 지시 순서대로 하겠습니다. 헷갈리면 여쭤보고요.']],ref:'의료법 제80조의2(간호조무사 업무)를 한 번 읽어 두세요. '+SAFE},
+
+{id:'values',cat:'병원 이해',q:'핵심가치 중에 왜 공감을 골랐어요?',it:'핵심가치를 외운 건지, 자기 경험과 이어지는지 봅니다.',wk:'자소서 2-1과 2-2의 마지막 문장이 같습니다.',cr:['고른 이유','근거 경험','입사 후 실천'],
+s:[['제일 나다운 가치','다섯 가지 다 중요하지만, 공감이 제일 저다운 가치라서 골랐습니다.'],
+['매장 5년','매장에서 5년 동안 손님마다 뭘 원하시는지, 뭘 어려워하시는지 먼저 살피는 게 제 일이었거든요.'],
+['공감에서 믿음으로','병원에서도 환자분 마음을 먼저 알아채면 그게 믿음이 되고, 그 믿음이 있어야 선생님들이랑도 손발이 맞는다고 생각합니다.']],
+tl:[['나머지 가치 중에 본인한테 부족한 건요?','혁신이요. 저는 새로운 걸 먼저 시도하기보다 익숙한 방식을 지키는 편이라서요. 대신 좋은 방법은 빨리 배워서 따라가겠습니다.',1],
+['간호조무사한테 혁신은 어떤 의미일까요?','거창한 게 아니라, 매일 하는 일에서 더 안전하고 덜 헷갈리는 방법을 찾아서 선생님들께 말씀드리는 거라고 생각합니다.'],
+['핵심가치 다섯 가지 말해 볼래요?','혁신, 협력, 공감, 신뢰, 지속입니다.']]},
+
+{id:'knowcnuh',cat:'병원 이해',q:'충남대학교병원에 대해 아는 거 있어요?',it:'병원을 알아보고 지원했는지 봅니다.',wk:'확인한 사실만 말하세요. 모르는 걸 지어내면 꼬리질문에서 무너집니다.',cr:['확인한 사실','끌린 점','내 역할'],
+s:[['거점 국립대병원','대전, 충남 지역 거점 국립대학교병원이라고 알고 있습니다.'],
+['핵심가치 다섯','지원하면서 핵심가치를 봤는데요, 혁신, 협력, 공감, 신뢰, 지속 다섯 가지였고, 그중에 "마음을 잇는 CNUH"라는 공감이 제일 와닿았습니다.'],
+['믿음에 맞게','지역 분들이 마지막에 믿고 찾아오는 병원인 만큼, 저도 기본부터 정확하게 하겠습니다.']],
+tl:[['어디서 알아봤어요?','병원 홈페이지랑 채용 공고를 보고 알아봤습니다.',1],
+['핵심가치 다섯 가지 말해 볼래요?','혁신, 협력, 공감, 신뢰, 지속입니다.'],
+['지역에서 우리 병원 역할은 뭐라고 봐요?','큰 병이 생기면 결국 찾게 되는 병원이라, 중한 환자분들을 책임지는 역할이라고 생각합니다.']]},
+
+{id:'angry',cat:'상황',q:'보호자가 너무 오래 기다렸다고 화를 내요. 어떻게 하겠어요?',it:'감정을 받아 주되, 혼자 해결하려 하지 않고 연결하는지 봅니다.',wk:'',cr:['감정부터 인정','확인해서 안내','어려우면 보고'],
+s:[['마음부터','먼저 "오래 기다리셔서 많이 답답하셨죠" 하고 마음부터 알아드리겠습니다. 화나신 분께 설명부터 하면 더 화가 나실 수 있으니까요.'],
+['확인해서 안내','그다음에 지금 순서가 어디쯤인지, 얼마나 더 걸릴지, 제가 확인할 수 있는 건 확인해서 정확하게 말씀드리고요.'],
+['연결','제가 해결할 수 없는 부분이면 혼자 붙잡고 있지 않고, 담당 선생님께 바로 말씀드려서 연결해 드리겠습니다.']],
+tl:[['보호자가 욕을 하면요?','맞대응하지 않고 차분하게 말씀드리되, 혼자 감당하지 않고 선배나 담당자께 바로 도움을 요청하겠습니다.'],
+['다른 환자들이 다 보고 있으면요?','조용한 곳으로 모셔서 말씀을 듣겠습니다. 다른 환자분들도 불안해하실 수 있으니까요.'],
+['말한 시간보다 더 늦어지면요?','늦어진다는 걸 안 순간 먼저 다시 말씀드리겠습니다. 모르고 기다리시는 게 제일 힘드시니까요.']],ref:SAFE},
+
+{id:'order',cat:'상황',q:'간호사 지시랑 환자 요청이 다르면 어떻게 할 거예요?',it:'임의로 판단하지 않고 보고 체계를 따르는지 봅니다.',wk:'',cr:['임의 판단 안 함','환자에게 양해','간호사에게 보고'],
+s:[['마음대로 안 함','제가 중간에서 마음대로 판단하지 않겠습니다.'],
+['환자분께 양해','환자분께는 "선생님께 확인하고 바로 말씀드릴게요" 하고 잠깐 양해를 구하고요.'],
+['보고, 다시 알림','간호사 선생님께 환자분 요청을 그대로 전해서 다시 지시를 받겠습니다. 그리고 결과를 환자분께 꼭 다시 알려 드리겠습니다.']],
+tl:[['간호사가 바빠서 연락이 안 되면요?','다른 간호사 선생님이나 책임 선생님께 여쭙겠습니다. 확인되기 전까지는 원래 지시대로 하고요.'],
+['금식인 환자가 물을 달라고 하면요?','드리지 않습니다. 왜 금식이 필요한지 쉽게 말씀드리고, 많이 힘들어하시면 선생님께 바로 알리겠습니다.'],
+['지시가 잘못된 것 같으면요?','그대로 하지 않고, "이게 맞는지 한 번만 확인하고 싶습니다" 하고 정중하게 여쭤보겠습니다.']],ref:SAFE},
+
+{id:'fall',cat:'상황',q:'넘어질 위험이 있는 환자가 혼자 화장실에 가려고 해요.',it:'환자 안전을 먼저 챙기고 도움을 요청하는지 봅니다.',wk:'',cr:['바로 곁에서 부축','필요하면 도움 요청','보고와 재확인'],
+s:[['곁으로','바로 환자분 곁으로 가서 혼자 일어나지 않으시게 하고, 제가 부축해 드리겠습니다.'],
+['도움 요청','혼자 부축하기 어려운 분이면 바로 다른 선생님을 불러서 같이 모시고요.'],
+['보고, 다시 확인','다녀오신 다음에는 담당 간호사 선생님께 보고하고, 침대 난간이랑 호출벨 위치도 다시 확인해 드리겠습니다.']],
+tl:[['이미 넘어진 걸 봤으면요?','바로 일으키지 않고, 의식이 있는지, 다친 데가 있는지 보면서 바로 선생님을 부르겠습니다. 그다음 지시대로 하고 보고하겠습니다.'],
+['환자가 혼자 가겠다고 고집하면요?','답답하신 마음은 알아드리되, 넘어지시면 더 오래 입원하실 수 있다고 쉽게 말씀드리고, 꼭 같이 가겠습니다.'],
+['평소에 낙상을 막으려면 뭘 해요?','침대 높이 낮추고, 난간 올리고, 호출벨이랑 자주 쓰시는 물건은 손 닿는 데 두고, 바닥에 물기 없는지 보겠습니다.']],ref:SAFE},
+
+{id:'identify',cat:'상황',q:'환자 확인은 어떻게 해요?',it:'환자 확인 원칙을 알고, 바쁠 때도 지키는지 봅니다.',wk:'',cr:['두 가지 이상 정보','환자가 직접 말하게','매번'],
+s:[['두 가지 정보','환자분 성함이랑 생년월일, 이렇게 두 가지 이상으로 확인합니다.'],
+['직접 말씀하게','제가 이름을 불러서 "맞으시죠?" 하고 묻는 게 아니라, 환자분이 직접 성함이랑 생년월일을 말씀하시게 해서 팔찌랑 맞춰 봅니다.'],
+['매번','검사나 이송, 처치 전에는 아는 분이라도 매번 이렇게 확인하겠습니다.']],
+tl:[['같은 이름 환자가 있으면요?','그럴수록 생년월일이랑 등록번호까지 꼭 확인하고, 같은 이름 환자가 있다는 걸 선생님들께도 알리겠습니다.'],
+['의식이 없는 환자는요?','보호자분께 여쭙거나 팔찌 같은 식별 정보로 확인하고, 애매하면 선생님께 확인받겠습니다.'],
+['바쁜데 그냥 넘어가면 안 되는 이유는요?','한 번 바뀌면 되돌릴 수 없는 일이 생기니까요. 바쁠 때 실수가 제일 많이 나서, 바쁠수록 더 지켜야 한다고 생각합니다.']],ref:SAFE},
+
+{id:'contam',cat:'상황',q:'멸균 물품 포장이 젖어 있는 걸 봤어요.',it:'감염관리 원칙과 보고 습관을 봅니다.',wk:'',cr:['쓰지 않음','따로 빼서 표시','보고하고 교체'],
+s:[['쓰지 않음','젖은 포장은 멸균이 깨졌다고 보고 쓰지 않겠습니다.'],
+['따로, 표시','다른 사람이 실수로 쓰지 않게 따로 빼서 표시해 두고요.'],
+['보고, 교체','담당 선생님께 보고하고 새 물품으로 바꾸겠습니다. 실습 때 기구 소독이랑 정리를 직접 해 봐서, 이게 얼마나 중요한지 알고 있습니다.']],
+tl:[['급해서 당장 써야 하면요?','급해도 쓰지 않습니다. 바로 다른 걸 가져오고, 없으면 선생님께 바로 말씀드리겠습니다.'],
+['이미 누가 썼을 수도 있으면요?','제가 판단하지 않고 그 사실을 바로 보고하겠습니다.'],
+['손 위생은 언제 해요?','환자분 만지기 전이랑 후, 무균 처치 전, 체액이 묻었을 수 있을 때, 그리고 환자 주변 물건을 만진 뒤에 합니다.']],ref:SAFE},
+
+{id:'scope',cat:'상황',q:'내 업무가 아닌 일을 해 달라고 하면 어떻게 해요?',it:'정중하게 선을 지키고 대안을 찾는지 봅니다.',wk:'',cr:['정중히 설명','할 수 있는 것 제안','담당자 연결'],
+s:[['정중하게','"이건 제가 할 수 없는 일이라서요" 하고 정중하게 말씀드리겠습니다.'],
+['할 수 있는 것','대신 "제가 할 수 있는 건 이건데, 이건 먼저 해 드릴게요" 하고 할 수 있는 걸 찾아서 해 드리고요.'],
+['연결','그 일은 맡으신 선생님께 바로 연결해 드리겠습니다.']],
+tl:[['선배가 원래 다 하는 일이라고 하면요?','선배님 말씀도 이해되지만, 제 범위가 아닌 건 확인하고 하는 게 맞다고 생각해서 정중하게 한 번 더 여쭤보겠습니다.'],
+['환자가 주삿바늘을 빼 달라고 하면요?','제가 빼 드리지 않고, 담당 간호사 선생님께 바로 말씀드려서 오시게 하겠습니다. 불편하신 데는 없는지 먼저 살피고요.'],
+['거절하고 나서 분위기가 안 좋아지면요?','그 자리에서 길게 말하지 않고, 나중에 따로 이유를 차분하게 말씀드리겠습니다.']],ref:SAFE},
+
+{id:'shift',cat:'곤란',q:'3교대 근무 할 수 있어요?',it:'가능 여부를 분명히 말하는지, 준비가 돼 있는지 봅니다.',wk:'',cr:['분명한 답','근거','적응 계획'],
+s:[['네, 가능합니다','네, 가능합니다.'],
+['근거','매장에서도 주말이나 행사 때는 늦게까지 일하는 게 익숙했고, 실습 때도 체력적으로 큰 문제는 없었습니다.',1],
+['리듬 관리','처음엔 생활 리듬이 흔들릴 수 있으니까, 자는 시간을 정해 두고 컨디션 관리부터 신경 쓰겠습니다.']],
+tl:[['밤 근무는 해 봤어요?','아직 안 해 봤습니다. 그래서 더 미리 준비하려고 합니다.',1],
+['가족 일정이랑 겹치면요?','그건 가족이랑 미리 다 이야기해 뒀습니다. 근무가 먼저입니다.',1],
+['적응이 안 되면요?','혼자 버티기보다 선배님들께 어떻게 관리하시는지 여쭤보고 배우겠습니다.']]},
+
+{id:'age',cat:'곤란',q:'다른 사람들보다 늦게 시작했는데, 괜찮겠어요?',it:'나이·공백을 피하지 않고 강점으로 바꾸는지 봅니다.',wk:'',cr:['피하지 않음','경험의 강점','배우는 자세'],
+s:[['인정','네, 늦게 시작한 건 맞습니다.'],
+['사람 대하는 일','대신 매장에서 5년 동안 여러 연령대 손님을 만나면서 사람 대하는 일은 몸에 익었습니다. 특히 어르신 응대는 자신 있어요.'],
+['신규답게','그리고 늦게 온 만큼 더 절실해서, 나이 생각하지 않고 신규답게 배우겠습니다.']],
+tl:[['나이 어린 선배한테 지시받으면 어때요?','병원에서는 나이보다 경력이 먼저라고 생각합니다. 똑같이 선배님으로 따르고 배우겠습니다.'],
+['체력은 괜찮아요?','네, 괜찮습니다. 매장에서 하루 종일 서서 일하는 게 익숙했습니다.'],
+['신규 교육 따라갈 수 있겠어요?','모르는 건 바로 묻고, 그날 배운 건 그날 정리하겠습니다. 실습 때도 그렇게 했습니다.',1]]},
+
+{id:'stamina',cat:'곤란',q:'체력이나 스트레스는 어떻게 관리해요?',it:'근무를 버틸 근거와 관리 방법이 있는지 봅니다.',wk:'',cr:['근거','관리 방법','일의 일부로'],
+s:[['서서 일한 5년','매장에서 5년 동안 하루 종일 서서 일했고, 실습 때도 무리 없이 다 마쳤습니다.'],
+['걷기, 그날 털기','쉬는 날엔 걸으면서 체력을 유지하고, 스트레스는 그날그날 털어 내려고 해요.',1],
+['내 몸이 환자 안전','제 몸 관리가 곧 환자분 안전이라고 생각해서, 컨디션 관리도 일의 일부로 챙기겠습니다.']],
+tl:[['아픈데 근무가 잡혀 있으면요?','참고 나오기보다 미리 말씀드려서 부서에 피해가 덜 가게 하겠습니다. 옮을 수 있는 병이면 더더욱요.'],
+['스트레스는 주로 어떻게 풀어요?','산책하면서 그날 있었던 일을 정리합니다.',1],
+['오래 서서 일해 봤어요?','네, 매장에서 5년 동안 하루 종일 서서 일했습니다.']]},
+
+{id:'other',cat:'곤란',q:'다른 병원도 지원했어요?',it:'솔직함과 이 병원에 대한 의지를 같이 봅니다.',wk:'',cr:['솔직하게','1순위인 이유','마무리'],
+s:[['솔직하게','네, 다른 곳도 지원했습니다.',1],
+['1순위','그래도 제가 제일 일하고 싶은 곳은 충남대학교병원입니다. 지역에서 가장 믿고 찾는 병원이라, 여기서 제대로 배우고 오래 일하고 싶어요.'],
+['오겠습니다','기회를 주신다면 망설이지 않고 오겠습니다.']],
+tl:[['둘 다 붙으면 어디 갈 거예요?','충남대학교병원으로 오겠습니다.'],
+['왜 우리가 1순위예요?','중한 환자분이 많은 큰 병원에서 제대로 배우고 싶고, 공감이라는 핵심가치가 제가 일하는 방식이랑 맞아서요.'],
+['떨어지면요?','부족한 걸 채워서 다시 지원하겠습니다.']]},
+
+{id:'noexp',cat:'곤란',q:'대학병원 경험이 없는데 잘할 수 있겠어요?',it:'부족함을 인정하고 배울 계획이 있는지 봅니다.',wk:'',cr:['인정','가져올 것','배울 방법'],
+s:[['인정','네, 대학병원 경험은 없습니다. 실습은 산부인과, 성형외과, 피부관리실에서 했습니다.'],
+['가져올 것','대신 거기서 수술 전 처치 보조, 기구 소독, 환자 안내 같은 기본은 직접 해 봤고요, 매장에서 5년 동안 사람 응대하고 꼼꼼하게 기록하던 습관도 있습니다.'],
+['두 번 묻지 않기','모르는 건 바로 여쭙고, 배운 건 그날 정리해서 같은 걸 두 번 묻지 않겠습니다.']],
+tl:[['뭐부터 공부할 거예요?','환자 확인이랑 감염관리 규정, 그리고 배치받은 부서에서 자주 하는 일부터요.'],
+['처음에 실수하면요?','바로 보고하고, 왜 그랬는지 정리해서 다시는 안 하게 하겠습니다.'],
+['의원 실습에서 배운 것 중에 그대로 쓸 수 있는 건요?','기구 소독하고 정리하는 습관이요. 위생은 어디서나 기본이니까요.']]},
+
+{id:'dept',cat:'곤란',q:'원하지 않는 부서에 배치되면 어떻게 할 거예요?',it:'조직의 결정을 받아들이고 어디서든 제 몫을 할 사람인지 봅니다.',wk:'',cr:['받아들임','어디서나 할 일','배울 기회'],
+s:[['받아들임','병원에서 필요해서 보내시는 거니까, 받아들이고 가겠습니다.'],
+['어디서나 기본','어느 부서든 환자분 곁에서 하는 기본은 같다고 생각해요. 환자 확인, 감염관리, 그리고 친절한 안내요.'],
+['배울 기회','처음 해 보는 부서면 오히려 더 많이 배울 기회로 생각하겠습니다.']],
+tl:[['그래도 꼭 가고 싶은 부서는 있어요?','실습 때 해 본 처치 보조 쪽이면 빨리 적응할 수 있을 것 같아요. 그래도 어디든 괜찮습니다.',1],
+['힘들다고 소문난 부서면요?','힘든 만큼 빨리 배운다고 생각합니다. 선배님들이 버티시는 방법부터 배우겠습니다.'],
+['동료랑 잘 안 맞으면요?','제가 먼저 질문하고 맞춰 보겠습니다. 매장에서 선배랑 의견이 달랐을 때도 그렇게 풀었습니다.']]},
+
+{id:'last',cat:'마무리',q:'마지막으로 하고 싶은 말 있어요?',it:'짧고 진심 있게 끝내는지 봅니다.',wk:'30초를 넘기지 마세요.',cr:['30초 이내','강점 한 줄','감사'],
+s:[['감사','오늘 이야기할 기회 주셔서 감사합니다.'],
+['눈높이의 마음','5년 동안 사람 눈높이에서 일해 왔는데, 이제 그 마음으로 환자분 곁에 서고 싶습니다.'],
+['기본부터, 오래','충남대학교병원에서 기본부터 정확하게, 오래 일하는 간호조무사가 되겠습니다. 감사합니다.']],tl:[]},
+
+{id:'ask',cat:'마무리',q:'저희한테 궁금한 거 있어요?',it:'일에 대한 관심을 봅니다.',wk:'급여나 휴가 질문은 이 자리에서는 피하세요.',cr:['조건 질문 피함','교육·적응 질문','짧게'],
+s:[['신규 교육','신규 간호조무사가 들어오면 처음에 어떤 교육을 받는지 여쭤봐도 될까요?'],
+['미리 준비','미리 알고 준비해서 빨리 적응하고 싶어서요.'],
+['감사','말씀해 주셔서 감사합니다.']],tl:[]}
+];
+const QB=Object.fromEntries(Q.map(q=>[q.id,q]));
+const CATS=['기본','경험','병원 이해','상황','곤란','마무리'];
+const STEPN=['대본 듣기','따라 말하기','키워드로','질문만','꼬리질문'];
+const SELF=['첫 문장에서 바로 답했나요?','경험이나 근거를 넣었나요?','너무 빠르거나 길지 않았나요?','끝을 깔끔하게 맺었나요?'];
+const WAITQ=['intro','motive','whycnuh','empathy','last'];
+
+// ================= 저장 =================
+const KEY='cnuhIv2';let S=null;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+S=Object.assign({ans:{},last:null,dday:'',slow:false,edit:{}},S||{});
+let warned=false;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!warned){warned=true;toast('이 브라우저에서는 진행 상황이 저장되지 않습니다')}}}
+function A(id){return S.ans[id]||(S.ans[id]={d:[],self:{}})}
+function done(id,i){const a=A(id);if(!a.d[i]){a.d[i]=1;save()}}
+const nDone=id=>A(id).d.filter(Boolean).length;
+function blocks(q){return q.s.map((b,i)=>({k:b[0],t:(S.edit[q.id]||{})[i]||b[1],me:b[2]&&!(S.edit[q.id]||{})[i]}))}
+
+// ================= 도구 =================
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),1800)}
+function view(h,keep){const y=scrollY;$('#app').innerHTML=h;scrollTo(0,keep?y:0)}
+function go(h){if(location.hash==='#'+h)render();else location.hash=h}
+const ck=(t,on,fn)=>`<label class="ck"><input type="checkbox" ${on?'checked':''} onchange="${fn}"><span>${esc(t)}</span></label>`;
+const badge=id=>{const n=nDone(id);return `<span class="badge${n===5?' full':''}">${n?n+'/5':'시작 전'}</span>`};
+const ME='<span class="me">👤 본인 기억으로 바꾸세요</span>';
+
+// ---- 말하기(TTS): 끝날 때까지 기다림 ----
+let tok=0; // 화면이 바뀌면 진행 중인 흐름을 끊는 번호
+function say(t){return new Promise(res=>{
+  if(!('speechSynthesis' in window))return res();
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/["“”]/g,''));u.lang='ko-KR';u.rate=S.slow?.8:1;
+  const v=speechSynthesis.getVoices().find(v=>/^ko/i.test(v.lang));if(v)u.voice=v;
+  let f=false;const fin=()=>{if(!f){f=true;clearTimeout(h);res()}};u.onend=fin;u.onerror=fin;
+  const h=setTimeout(fin,t.length*(S.slow?320:250)+3000);speechSynthesis.speak(u);
+})}
+
+// ---- 마이크: 소리 크기만 본다(음성인식 없음, 기기 밖 전송 없음) ----
+let ms=null,an=null,ac=null,skipR=null,rec=null,recUrls=[];
+async function mic(){
+  if(ms)return true;
+  if(!navigator.mediaDevices?.getUserMedia)return false;
+  try{ms=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    ac=new (window.AudioContext||window.webkitAudioContext)();an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(ms).connect(an);return true}
+  catch(e){return false}
+}
+function lvl(){const d=new Float32Array(an.fftSize);an.getFloatTimeDomainData(d);let s=0;for(const v of d)s+=v*v;return Math.sqrt(s/d.length)}
+function skip(){if(skipR)skipR()}
+// 말을 시작했다가 silence ms 동안 조용하면 끝. 마이크가 없으면 [다음] 버튼만 기다림.
+function listen(my,{silence=1600,max=120000}={}){return new Promise(res=>{
+  let fin=false,iv=null;const end=r=>{if(fin)return;fin=true;clearInterval(iv);skipR=null;const b=$('#vu i');if(b)b.style.width='0';res(r)};
+  skipR=()=>end('tap');
+  if(!an)return;
+  const t0=Date.now();let floor=0,n=0,talked=false,last=0;
+  iv=setInterval(()=>{
+    if(my!==tok)return end('stop');
+    const l=lvl(),now=Date.now();const b=$('#vu i');if(b)b.style.width=Math.min(100,l*900)+'%';
+    if(now-t0<300){floor+=l;n++;return}
+    const thr=Math.max(.02,(floor/n)*3);
+    if(l>thr){talked=true;last=now}
+    if(talked&&now-last>silence)end('voice');
+    if(now-t0>max)end('max');
+  },60);
+})}
+function recStart(){if(!ms||!window.MediaRecorder)return null;const ch=[];const r=new MediaRecorder(ms);r.ondataavailable=e=>ch.push(e.data);r.start();r.t0=Date.now();r.ch=ch;rec=r;return r}
+function recStop(r){return new Promise(res=>{if(!r)return res(null);r.onstop=()=>{const u=URL.createObjectURL(new Blob(r.ch,{type:r.mimeType}));recUrls.push(u);res({url:u,sec:Math.round((Date.now()-r.t0)/1000)})};r.stop()})}
+let T=null,T2=null;
+function stopAll(){
+  tok++;if('speechSynthesis' in window)speechSynthesis.cancel();clearInterval(T);clearTimeout(T2);skip();
+  if(rec&&rec.state!=='inactive'){rec.onstop=null;rec.stop()}rec=null;
+  if(ms)ms.getTracks().forEach(t=>t.stop());ms=null;an=null;if(ac)ac.close().catch(()=>{});ac=null;
+  recUrls.forEach(u=>URL.revokeObjectURL(u));recUrls=[];
+}
+
+// ================= 라우팅 =================
+let cur={};
+addEventListener('hashchange',render);
+function render(){
+  stopAll();
+  const [v,a,b]=(location.hash.slice(1)||'home').split('/');
+  if(v==='q'&&QB[a]){cur={id:a,step:Math.min(4,+b||0)};return detail()}
+  ({list,mock:mockHome,wait:waitView,script:scriptView}[v]||home)();
+}
+
+// ================= 첫 화면 =================
+function recommend(){let best=Q[0];for(const q of Q)if(nDone(q.id)<nDone(best.id))best=q;return best.id}
+function dday(){if(!S.dday)return '';const d=Math.ceil((new Date(S.dday+'T00:00')-new Date(new Date().toDateString()))/864e5);return d>0?`D-${d}`:d===0?'D-day':''}
+function home(){
+  const full=Q.filter(q=>nDone(q.id)===5).length,started=Q.filter(q=>nDone(q.id)).length;
+  const r=QB[recommend()],L=S.last&&QB[S.last.id];
+  view(`<h1>면접 연습장</h1><p class="sub">충남대학교병원 간호조무직 관리자면접 ${dday()?'· <b>'+dday()+'</b>':''}</p>
+  ${L?`<button class="big p" onclick="go('q/${L.id}/${S.last.step}')">▶ 이어서 하기<small>${esc(L.q)} · ${STEPN[S.last.step]}</small></button>`:''}
+  <button class="big ${L?'':'p'}" onclick="go('q/${r.id}/0')">🗣 질문 하나 연습하기<small>추천: ${esc(r.q)}</small></button>
+  <button class="big" onclick="go('mock')">🎤 모의면접<small>9문항 · 혼자 또는 면접관과 함께</small></button>
+  <div class="card mut">시작한 질문 <b>${started}</b> · 5단계 다 끝낸 질문 <b>${full}</b> / 전체 ${Q.length}</div>
+  <div class="grid"><button onclick="go('list')">📋 질문 목록</button><button onclick="go('script')">📄 전체 대본</button><button onclick="go('wait')">🪑 대기실</button><button onclick="S.slow=!S.slow;save();home()">🔈 읽기 ${S.slow?'느리게':'보통'}</button></div>
+  <div class="card"><span class="mut">면접 날짜 (선택) </span><input type="date" value="${esc(S.dday)}" onchange="S.dday=this.value;save();home()"></div>
+  <p class="mut">이어폰을 끼면 더 잘 됩니다. 마이크는 말이 끝났는지 소리 크기로만 판단하고, 녹음은 이 화면 안에서만 다시 듣고 바로 지워집니다.</p>`);
+}
+
+// ================= 질문 목록 =================
+function list(){
+  view(`<button class="back" onclick="go('home')">← 처음</button><h1>질문 목록</h1>`+CATS.map(c=>`<h2>${c}</h2><div class="list">`+
+    Q.filter(q=>q.cat===c).map(q=>`<a href="#q/${q.id}/${Math.min(nDone(q.id),4)}"><span>${esc(q.q)}</span>${badge(q.id)}</a>`).join('')+`</div>`).join(''));
+}
+
+// ================= 질문 상세 =================
+function detail(){
+  const q=QB[cur.id],a=A(cur.id);S.last={id:cur.id,step:cur.step};save();
+  const body=[stepListen,stepRepeat,stepKey,stepReal,stepTail][cur.step](q,a);
+  view(`<div class="top"><button class="back" onclick="go('list')">← 질문 목록</button>${badge(q.id)}</div>
+  <div class="mut">${q.cat}</div><div class="q">${esc(q.q)}</div>
+  <div class="steps">${STEPN.map((s,i)=>`<button class="${i===cur.step?'on':''} ${a.d[i]?'dn':''}" onclick="go('q/${cur.id}/${i}')">${i+1}<br>${s}</button>`).join('')}</div>
+  ${body}
+  <div id="after"></div>`);
+}
+function nextBtn(){return cur.step<4?`<button class="big p c" onclick="go('q/${cur.id}/${cur.step+1}')">다음: ${STEPN[cur.step+1]} →</button>`:`<button class="big p c" onclick="go('q/${recommend()}/0')">다음 질문 →</button>`}
+const stageBox=()=>`<div class="card stage" id="stage"></div><div class="row" id="ctl"></div>`;
+function paint(st,html){$('#stage').innerHTML=`<div class="st">${st} <span class="vu" id="vu"><i></i></span></div>${html}`}
+function ctl(h){$('#ctl').innerHTML=h}
+
+// 1. 대본 듣기
+function stepListen(q){
+  const B=blocks(q);
+  return `<div class="card"><b>면접관이 보는 것</b><p>${esc(q.it)}</p>${q.wk?`<div class="warnbox">⚠ ${esc(q.wk)}</div>`:''}</div>
+  <div class="row"><button class="p" onclick="playAll()">▶ 대본 전체 듣기</button><button onclick="speechSynthesis.cancel();tok++">■ 멈춤</button></div>
+  <div class="card">${B.map((b,i)=>`<div class="blk" id="b${i}"><b>${esc(b.k)}</b>${esc(b.t)} ${b.me?ME:''}</div>`).join('')}</div>
+  ${q.ref?`<p class="mut">📎 ${esc(q.ref)}</p>`:''}
+  <details><summary>✏️ 대본 고치기 (내 말투, 내 기억으로)</summary>
+  ${B.map((b,i)=>`<div class="mut">${esc(b.k)}</div><textarea oninput="(S.edit['${q.id}']=S.edit['${q.id}']||{})[${i}]=this.value.trim();save()">${esc(b.t)}</textarea>`).join('')}
+  <button class="chip" onclick="if(confirm('원래 대본으로 되돌릴까요?')){delete S.edit['${q.id}'];save();detail()}">원래 대본으로</button></details>
+  ${nextBtn()}`;
+}
+async function playAll(){
+  const my=++tok,B=blocks(QB[cur.id]);
+  for(let i=0;i<B.length;i++){
+    document.querySelectorAll('.blk').forEach(e=>e.classList.toggle('now',e.id==='b'+i));
+    await say(B[i].t);if(my!==tok)return;
+  }
+  document.querySelectorAll('.blk').forEach(e=>e.classList.remove('now'));done(cur.id,0);toast('다 들었습니다. 이제 따라 말해 보세요');
+}
+
+// 2. 따라 말하기: 한 덩이 듣고 → 따라 말하고 → 다음
+function stepRepeat(q){
+  setTimeout(()=>{paint('준비',`<p>한 덩이씩 읽어 줍니다. 듣고 나서 <b>그대로 소리 내어 따라 말하세요.</b> 말이 끝나면 저절로 넘어갑니다.</p>`);ctl(`<button class="p big c" onclick="runRepeat()">▶ 시작</button>`)});
+  return stageBox()+`<div id="after2"></div>`;
+}
+async function runRepeat(){
+  const my=++tok,B=blocks(QB[cur.id]),m=await mic();
+  for(let i=0;i<B.length;i++){
+    paint(`🔊 듣기 ${i+1}/${B.length}`,`<div class="huge">${esc(B[i].t)}</div>`);ctl(`<button onclick="tok++;detail()">■ 그만</button>`);
+    await say(B[i].t);if(my!==tok)return;
+    paint(`🗣 따라 말하세요 ${i+1}/${B.length}`,`<div class="huge">${esc(B[i].t)}</div>`);ctl(`<button class="p" onclick="skip()">다 말했어요 →</button>`);
+    await listen(my,{silence:1400});if(my!==tok)return;
+  }
+  // 마지막에 통째로
+  paint('🗣 이번엔 처음부터 끝까지 한 번에',`<div style="font-size:17px">${B.map(b=>esc(b.t)).join(' ')}</div>`);ctl(`<button class="p" onclick="skip()">다 말했어요 →</button>`);
+  await listen(my,{silence:2200});if(my!==tok)return;
+  done(cur.id,1);paint('✓ 끝','<p>따라 말하기를 마쳤습니다. 다음은 키워드만 보고 말하기입니다.</p>');ctl(`<button onclick="runRepeat()">한 번 더</button>`);$('#after').innerHTML=nextBtn();
+}
+
+// 3. 키워드만 보고 말하기
+function stepKey(q){
+  setTimeout(()=>{paint('준비',`<p>이제 문장은 숨기고 <b>키워드만</b> 보여 줍니다. 키워드를 보고 그 덩이를 내 말로 말해 보세요. 말한 뒤에 원래 대본을 보여 줍니다.</p><p class="mut">흐름: ${blocks(q).map(b=>'['+esc(b.k)+']').join(' → ')}</p>`);ctl(`<button class="p big c" onclick="runKey()">▶ 시작</button>`)});
+  return stageBox();
+}
+async function runKey(order){
+  const my=++tok,B=blocks(QB[cur.id]);await mic();
+  order=order||B.map((_,i)=>i);const miss=[];
+  for(const i of order){
+    paint(`🗣 키워드 보고 말하기`,`<div class="mut">${order.indexOf(i)+1} / ${order.length}</div><div class="huge">${esc(B[i].k)}</div>`);ctl(`<button class="p" onclick="skip()">다 말했어요 →</button><button onclick="tok++;detail()">■ 그만</button>`);
+    await listen(my,{silence:1600});if(my!==tok)return;
+    paint('원래 대본',`<div class="mut">${esc(B[i].k)}</div><div style="font-size:18px">${esc(B[i].t)}</div>`);
+    const ok=await new Promise(r=>{ctl(`<button onclick="this.r(0)" id="nx">😵 많이 달랐어요</button><button class="p" id="ox">😀 비슷하게 했어요</button>`);$('#nx').onclick=()=>r(0);$('#ox').onclick=()=>r(1)});
+    if(my!==tok)return;if(!ok)miss.push(i);
+  }
+  if(miss.length){paint('한 번 더',`<p>헷갈린 ${miss.length}덩이만 다시 해 봅니다.</p>`);ctl(`<button class="p big c" onclick="runKey([${miss}])">▶ 다시</button>`);return}
+  done(cur.id,2);paint('✓ 끝','<p>키워드만으로 다 말했습니다. 이제 질문만 듣고 통째로 답해 보세요.</p>');ctl(`<button onclick="runKey()">한 번 더</button>`);$('#after').innerHTML=nextBtn();
+}
+
+// 4. 질문만 듣고 답하기 (녹음 → 다시 듣기 → 자기 점검)
+function stepReal(q,a){
+  setTimeout(()=>{paint('준비','<p>면접관이 질문만 합니다. 대본 없이 답해 보세요. 말이 2.5초 멈추면 녹음이 끝나고 바로 다시 들어 볼 수 있습니다.</p>');ctl(`<button class="p big c" onclick="runReal()">▶ 시작</button>`)});
+  return stageBox()+`<audio id="au" controls hidden style="width:100%;margin:8px 0"></audio><div id="rmsg" class="mut"></div>
+  <h2>다시 들으며 점검</h2>${SELF.map((c,i)=>ck(c,a.self[i],`A(cur.id).self[${i}]=this.checked;save()`)).join('')}
+  <details><summary>키워드 보기</summary><p>${blocks(q).map(b=>'['+esc(b.k)+']').join(' → ')}</p></details>`;
+}
+async function runReal(){
+  const my=++tok,q=QB[cur.id],m=await mic();
+  paint('🔊 면접관',`<div class="huge">${esc(q.q)}</div>`);ctl('');
+  await say(q.q);if(my!==tok)return;
+  const r=recStart(),t0=Date.now();
+  paint('🗣 답하세요',`<div class="timer" id="tm">0</div><p class="mut" style="text-align:center">초 · 1분 안팎이 적당</p>`);ctl(`<button class="p" onclick="skip()">■ 답 끝</button>`);
+  T=setInterval(()=>{const s=Math.round((Date.now()-t0)/1000),e=$('#tm');if(e){e.textContent=s;e.className='timer '+(s>90?'bad':'')}},500);
+  await listen(my,{silence:2500,max:180000});clearInterval(T);if(my!==tok)return;
+  const res=await recStop(r);const sec=Math.round((Date.now()-t0)/1000);
+  done(cur.id,3);
+  paint('✓ 답했습니다',`<p><b>${sec}초</b> ${sec>90?'<span class="bad">— 길어요. 덩이 하나를 줄여 보세요.</span>':sec<30?'— 조금 짧아요. 경험을 한 문장 더 넣어 보세요.':'— 적당합니다.'}</p>`);
+  ctl(`<button onclick="runReal()">다시 답하기</button>`);
+  if(res){const au=$('#au');au.src=res.url;au.hidden=false}else $('#rmsg').textContent=m?'':'마이크를 쓸 수 없어 녹음은 못 했습니다. [답 끝]을 눌러 진행하세요.';
+  $('#after').innerHTML=nextBtn();
+}
+
+// 5. 꼬리질문
+function stepTail(q){
+  if(!q.tl.length){done(cur.id,4);return `<div class="card">이 질문은 꼬리질문이 없습니다. 짧게 끝내는 연습만 하면 됩니다.</div>`+nextBtn()}
+  setTimeout(()=>{paint('준비',`<p>첫 답을 마쳤다고 치고, 면접관이 이어서 ${q.tl.length}번 더 묻습니다. <b>짧게, 1~3문장으로</b> 답해 보세요. 답한 뒤 예시 답을 보여 줍니다.</p>`);ctl(`<button class="p big c" onclick="runTail()">▶ 시작</button>`)});
+  return stageBox()+`<details><summary>꼬리질문과 예시 답 모두 보기</summary>${q.tl.map(t=>`<div class="card"><b>${esc(t[0])}</b><p>${esc(t[1])} ${t[2]?ME:''}</p></div>`).join('')}</details>`;
+}
+async function runTail(){
+  const my=++tok,q=QB[cur.id];await mic();
+  for(let i=0;i<q.tl.length;i++){
+    const [tq,ta,me]=q.tl[i];
+    paint(`🔊 꼬리질문 ${i+1}/${q.tl.length}`,`<div class="huge">${esc(tq)}</div>`);ctl('');
+    await say(tq);if(my!==tok)return;
+    paint(`🗣 짧게 답하세요 ${i+1}/${q.tl.length}`,`<div class="huge">${esc(tq)}</div>`);ctl(`<button class="p" onclick="skip()">다 말했어요 →</button>`);
+    await listen(my,{silence:1800,max:60000});if(my!==tok)return;
+    paint('예시 답',`<div class="mut">${esc(tq)}</div><div style="font-size:18px">${esc(ta)}</div>${me?ME:''}`);
+    ctl(`<button onclick="say(QB[cur.id].tl[${i}][1])">🔊 예시 듣기</button><button class="p" onclick="skip()">${i+1<q.tl.length?'다음 꼬리질문 →':'끝'}</button>`);
+    await listen(my,{max:600000,silence:1e9});if(my!==tok)return; // 버튼으로만 넘어감
+  }
+  done(cur.id,4);paint('✓ 끝','<p>이 질문은 5단계를 모두 마쳤습니다.</p>');ctl(`<button onclick="runTail()">한 번 더</button>`);$('#after').innerHTML=nextBtn();
+}
+
+// ================= 전체 대본 =================
+function scriptText(){return Q.map(q=>`■ [${q.cat}] ${q.q}\n`+blocks(q).map(b=>b.t+(b.me?' (👤 본인 기억으로)':'')).join(' ')+(q.tl.length?'\n'+q.tl.map(t=>`  └ ${t[0]}\n    ${t[1]}${t[2]?' (👤)':''}`).join('\n'):'')).join('\n\n')}
+function scriptView(){
+  view(`<button class="back" onclick="go('home')">← 처음</button><h1>전체 대본</h1><p class="sub">고친 대본이 반영돼 있습니다. 👤 표시는 자소서에 없는 내용이라 본인 기억으로 바꿔야 하는 곳입니다.</p>
+  <div class="row"><button class="p" onclick="copyText(scriptText())">전체 복사</button></div>
+  <div class="script">`+CATS.map(c=>`<h2>${c}</h2>`+Q.filter(q=>q.cat===c).map(q=>`<div class="card"><b>${esc(q.q)}</b><p>${blocks(q).map(b=>esc(b.t)+(b.me?' '+ME:'')).join(' ')}</p>
+    ${q.tl.length?`<details><summary>꼬리질문 ${q.tl.length}개</summary>${q.tl.map(t=>`<p><b>${esc(t[0])}</b><br>${esc(t[1])} ${t[2]?ME:''}</p>`).join('')}</details>`:''}
+    <a href="#q/${q.id}/0">연습하기 →</a></div>`).join('')).join('')+`</div>`);
+}
+function copyText(t){
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('복사했습니다'),()=>{
+    const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();
+    try{document.execCommand('copy');toast('복사했습니다')}catch(e){toast('복사가 안 됩니다')}x.remove()});
+}
+
+// ================= 모의면접 =================
+let M=null;
+function mockHome(){
+  view(`<button class="back" onclick="go('home')">← 처음</button><h1>모의면접</h1><p class="sub">기본 2 · 경험/병원 3 · 상황 2 · 곤란 1 · 마무리 1 = 9문항. 매번 순서가 바뀌고, 답이 끝나면 꼬리질문이 하나씩 붙기도 합니다.</p>
+  <button class="big p" onclick="mockStart('solo')">🙋 혼자<small>질문을 읽어 주고, 말이 끝나면 다음 질문으로 넘어갑니다. 끝나고 내 답을 다시 들어요.</small></button>
+  <button class="big" onclick="mockStart('pair')">👥 함께<small>가족이나 친구가 휴대폰을 들고 면접관이 됩니다</small></button>`);
+}
+function pickMock(){
+  const ids=c=>shuf(Q.filter(q=>q.cat===c).map(q=>q.id));
+  return ['intro',shuf(['motive','whycnuh','vision','strength'])[0],...shuf([...ids('경험'),...ids('병원 이해')]).slice(0,3),...ids('상황').slice(0,2),ids('곤란')[0],'last'];
+}
+function mockStart(mode){stopAll();M={mode,list:pickMock(),i:0,res:[],ph:mode==='pair'?'hand':'go'};mode==='pair'?mockPair():mockSolo()}
+async function mockSolo(){
+  const my=++tok,n=M.list.length;const m=await mic();
+  view(`<div class="mut" id="mn"></div>`+stageBox());
+  for(;M.i<n;M.i++){
+    const q=QB[M.list[M.i]],r={};M.res[M.i]=r;$('#mn').textContent=`혼자 모의면접 · ${M.i+1} / ${n}`;
+    paint('🔊 면접관',`<div class="huge">${esc(q.q)}</div>`);ctl('');
+    await say(q.q);if(my!==tok)return;
+    const rc=recStart(),t0=Date.now();
+    paint('🗣 답하세요',`<div class="huge" style="font-size:19px">${esc(q.q)}</div><div class="timer" id="tm">0</div>`);ctl(`<button class="p" onclick="skip()">■ 답 끝</button>`);
+    T=setInterval(()=>{const e=$('#tm');if(e)e.textContent=Math.round((Date.now()-t0)/1000)},500);
+    await listen(my,{silence:2500,max:180000});clearInterval(T);if(my!==tok)return;
+    Object.assign(r,await recStop(rc)||{},{sec:Math.round((Date.now()-t0)/1000)});
+    if(q.tl.length&&Math.random()<.5){
+      const tq=q.tl[Math.random()*q.tl.length|0][0];r.tq=tq;
+      paint('🔊 꼬리질문',`<div class="huge">${esc(tq)}</div>`);ctl('');await say(tq);if(my!==tok)return;
+      const rc2=recStart();paint('🗣 짧게 답하세요',`<div class="huge" style="font-size:19px">${esc(tq)}</div>`);ctl(`<button class="p" onclick="skip()">■ 답 끝</button>`);
+      await listen(my,{silence:2000,max:90000});if(my!==tok)return;r.tail=await recStop(rc2);
+    }
+  }
+  mockEnd(m);
+}
+function mockEnd(m){
+  view(`<h1>모의면접 끝</h1><p class="sub">내 답을 다시 들어 보고, 막혔던 질문은 눌러서 다시 연습하세요.${m?'':' (마이크를 쓸 수 없어 녹음은 없습니다)'}</p>`+
+  M.list.map((id,i)=>{const q=QB[id],r=M.res[i]||{};return `<div class="card"><b>${esc(q.q)}</b> <span class="mut">${r.sec||0}초</span>
+    ${r.url?`<audio controls src="${r.url}" style="width:100%"></audio>`:''}
+    ${r.tq?`<div class="mut">└ ${esc(r.tq)}</div>${r.tail?`<audio controls src="${r.tail.url}" style="width:100%"></audio>`:''}`:''}
+    <a href="#q/${id}/2">이 질문 다시 연습 →</a></div>`}).join('')+
+  `<div class="row"><button class="p" onclick="mockStart('solo')">한 번 더</button><button onclick="go('home')">처음으로</button></div>`);
+}
+function mockPair(){
+  const n=M.list.length;
+  if(M.ph==='hand')return view(`<div class="card" style="text-align:center;padding:40px 16px"><div class="huge">📱 면접관에게 휴대폰을 건네주세요</div><p class="mut">다음 화면부터 꼬리질문과 평가 기준이 보입니다. 지원자는 화면을 보지 마세요.</p></div><button class="big p c" onclick="M.ph='go';mockPair()">면접관입니다 · 시작</button>`);
+  if(M.ph==='back')return view(`<div class="card" style="text-align:center;padding:40px 16px"><div class="huge">수고하셨습니다</div><p>휴대폰을 지원자에게 돌려주세요.</p></div><button class="big p c" onclick="M.ph='end';mockPair()">결과 보기</button>`);
+  if(M.ph==='end')return view(`<h1>모의면접 결과</h1><p class="sub">면접관이 체크한 것과 메모입니다. ✗ 항목을 대본에 보강하세요.</p>`+M.list.map((id,i)=>{const q=QB[id],r=M.res[i]||{chk:{}};
+    return `<div class="card"><b>${esc(q.q)}</b>${q.cr.map((c,j)=>`<div class="${r.chk[j]?'ok':'bad'}">${r.chk[j]?'✓':'✗'} ${esc(c)}</div>`).join('')}${r.memo?`<p>📝 ${esc(r.memo)}</p>`:''}<a href="#q/${id}/0">대본 다시 보기 →</a></div>`}).join('')+
+    `<div class="row"><button class="p" onclick="mockStart('pair')">한 번 더</button><button onclick="go('home')">처음으로</button></div>`);
+  const q=QB[M.list[M.i]],r=M.res[M.i]||(M.res[M.i]={chk:{},memo:''});
+  view(`<div class="mut">면접관 화면 · ${M.i+1} / ${n}</div><div class="huge">${esc(q.q)}</div>
+    <p class="mut">이 질문을 지원자에게 소리 내어 읽어 주세요.</p>
+    <details><summary>모범 답 흐름 (키워드)</summary><p>${blocks(q).map(b=>'['+esc(b.k)+']').join(' → ')}</p></details>
+    ${q.tl.length?`<details><summary>꼬리질문 후보</summary><ul>${q.tl.map(t=>`<li>${esc(t[0])}</li>`).join('')}</ul></details>`:''}
+    <h2>좋은 답의 기준</h2>${q.cr.map((c,j)=>ck(c,r.chk[j],`M.res[M.i].chk[${j}]=this.checked`)).join('')}
+    ${ck('목소리 크기·속도가 괜찮았다',r.chk.v,`M.res[M.i].chk.v=this.checked`)}${ck('시선을 맞췄다',r.chk.e,`M.res[M.i].chk.e=this.checked`)}
+    <textarea placeholder="면접관 메모 (말버릇, 좋았던 점, 아쉬운 점)" oninput="M.res[M.i].memo=this.value">${esc(r.memo)}</textarea>
+    <button class="big p c" onclick="M.i++;if(M.i>=M.list.length)M.ph='back';mockPair()">${M.i+1<n?'다음 질문 →':'면접 끝'}</button>`);
+}
+
+// ================= 대기실 =================
+let W=0;
+function waitView(){
+  const q=QB[WAITQ[W]];
+  view(`<button class="back" onclick="go('home')">← 처음</button><h1>대기실</h1><p class="sub">소리 없이 키워드만 넘겨 보며 머릿속으로 말해 보세요.</p>
+  <div class="card"><div class="mut">${W+1} / ${WAITQ.length}</div><div class="q">${esc(q.q)}</div>
+  ${blocks(q).map(b=>`<p class="huge" style="font-size:20px">· ${esc(b.k)}</p>`).join('')}</div>
+  <div class="grid"><button onclick="W=(W+${WAITQ.length}-1)%${WAITQ.length};waitView()">← 이전</button><button onclick="W=(W+1)%${WAITQ.length};waitView()">다음 →</button></div>
+  <h2>호흡 1분</h2><div class="breath" id="br">준비</div><button class="big c" onclick="breathe()">시작 · 4초 들이쉬고 6초 내쉬기</button>`);
+}
+function breathe(){
+  clearTimeout(T2);let k=0;const b=$('#br');
+  const step=()=>{if(!b.isConnected)return;if(k>=12){b.textContent='끝';b.style.transition='transform 1s';b.style.transform='scale(.6)';return}
+    const inn=k%2===0;b.textContent=inn?'들이쉬기':'내쉬기';b.style.transition=`transform ${inn?4:6}s ease-in-out`;b.style.transform=`scale(${inn?1:.6})`;k++;T2=setTimeout(step,inn?4000:6000)};
+  step();
+}
+
+render();
+</script>
+</body>
+</html>
